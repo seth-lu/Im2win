@@ -35,7 +35,7 @@ class WeTensor{
 template<class dataType>
 double WeTensor<dataType>::compareTensor(WeTensor<dataType> &B){
     if(batch_size==B.batch_size&&channel==B.channel&&height==B.height&&width==B.width){
-    static double max_diff = -1;
+    double max_diff = -1;
     double diff = 1.0;
     dataType *a, *b;
     size_t iter = batch_size * channel * height * width;

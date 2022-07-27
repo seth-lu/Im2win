@@ -51,18 +51,26 @@ class Im2colConv :public Convolution<dataType>{
 
 template<class dataType>
 long double Im2colConv<dataType>::get_gflops(){
-     size_t filter_batch = filter->batch_size;
-     size_t filter_channel = filter->channel;
-     size_t filter_height = filter->height;
-     size_t filter_width = filter->width;
+    size_t filter_batch = filter->batch_size;
+    size_t filter_channel = filter->channel;
+    size_t filter_height = filter->height;
+    size_t filter_width = filter->width;
 
-     size_t output_batch = output->batch_size;
-     size_t output_channel = output->channel;
-     size_t output_height = output->height;
-     size_t output_width = output->width;
+    size_t output_batch = output->batch_size;
+    size_t output_channel = output->channel;
+    size_t output_height = output->height;
+    size_t output_width = output->width;
 
-    static long double gflops = 1e-9 * output_height * output_width * output_batch 
-                              * output_channel * filter_channel * filter_height * filter_width * 2;
+    // std::cout<<"output_height :"<<output_height<<std::endl;
+    // std::cout<<"output_width :"<<output_width<<std::endl;
+    // std::cout<<"output_batch :"<<output_batch<<std::endl;
+    // std::cout<<"output_channel :"<<output_channel<<std::endl;
+    // std::cout<<"filter_channel :"<<filter_channel<<std::endl;
+    // std::cout<<"filter_height :"<<filter_height<<std::endl;
+    // std::cout<<"filter_width :"<<filter_width<<std::endl;
+    //  
+    long double gflops = 1e-9 * output_height * output_width * output_batch * output_channel * filter_channel * filter_height * filter_width * 2;
+    // std::cout<<"gflops :"<<gflops<<std::endl;                          
     return gflops;
 }
 
@@ -96,7 +104,7 @@ long double DirectConv<dataType>::get_gflops(){
      size_t output_height = output->height;
      size_t output_width = output->width;
 
-    static long double gflops = 1e-9 * output_height * output_width * output_batch 
+    long double gflops = 1e-9 * output_height * output_width * output_batch 
                               * output_channel * filter_channel * filter_height * filter_width * 2;
     return gflops;
 }
@@ -195,7 +203,7 @@ long double Im2winConvBase<dataType>::get_gflops(){
      size_t output_height = output->height;
      size_t output_width = output->width;
 
-    static long double gflops = 1e-9 * output_height * output_width * output_batch 
+    long double gflops = 1e-9 * output_height * output_width * output_batch 
                               * output_channel * filter_channel * filter_height * filter_width * 2;
     return gflops;
 }
@@ -399,7 +407,7 @@ long double Im2winConvSIMD<dataType>::get_gflops(){
      size_t output_height = output->height;
      size_t output_width = output->width;
 
-    static long double gflops = 1e-9 * output_height * output_width * output_batch 
+    long double gflops = 1e-9 * output_height * output_width * output_batch 
                               * output_channel * filter_channel * filter_height * filter_width * 2;
     return gflops;
 }
