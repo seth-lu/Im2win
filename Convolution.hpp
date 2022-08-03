@@ -4,6 +4,7 @@
 #include "WeTensor.hpp"
 #include "im2winSIMD.hpp"
 
+//定义卷积运算的基类
 template<class dataType>
 class Convolution{
     public:
@@ -35,6 +36,7 @@ class Convolution{
 //     return gflops;
 // }
 
+//定义im2col卷积
 template<class dataType>
 class Im2colConv :public Convolution<dataType>{
     public:
@@ -49,6 +51,7 @@ class Im2colConv :public Convolution<dataType>{
     void conv_implement() override{output->getDataTensor() = at::conv2d(input->getDataTensor(), filter->getDataTensor(), {}, stride);return;};
 };
 
+//获取浮点运算次数
 template<class dataType>
 long double Im2colConv<dataType>::get_gflops(){
     size_t filter_batch = filter->batch_size;
@@ -74,6 +77,7 @@ long double Im2colConv<dataType>::get_gflops(){
     return gflops;
 }
 
+//定义直接卷积
 template<class dataType>
 class DirectConv :public Convolution<dataType>{
     public:
@@ -84,6 +88,7 @@ class DirectConv :public Convolution<dataType>{
     void conv_implement() override;
 };
 
+//直接卷积参数初始化
 template<class dataType>
 DirectConv<dataType>::DirectConv(WeTensor<dataType>* input_, WeTensor<dataType> *filter_, WeTensor<dataType> *output_, size_t stride_){
     input = input_;
@@ -109,6 +114,7 @@ long double DirectConv<dataType>::get_gflops(){
     return gflops;
 }
 
+//直接卷积的浮点运算过程
 template<class dataType>
 void DirectConv<dataType>::conv_implement(){
     dataType *inptr, *filptr, *outptr;
@@ -171,6 +177,7 @@ void DirectConv<dataType>::conv_implement(){
     return;
 }
 
+//定义未优化的im2win卷积
 template<class dataType>
 class Im2winConvBase :public Convolution<dataType>{
     public:
@@ -208,6 +215,7 @@ long double Im2winConvBase<dataType>::get_gflops(){
     return gflops;
 }
 
+//实现im2win数据转换算法
 template<class dataType>
 at::Tensor Im2winConvBase<dataType>::image2window(){
     const size_t input_batch = input->batch_size;
@@ -266,6 +274,7 @@ at::Tensor Im2winConvBase<dataType>::image2window(){
     return output;
 }
 
+//对filter进行数据转换
 template<class dataType>
 at::Tensor Im2winConvBase<dataType>::filter2window(){
     const size_t filter_batch = filter->batch_size;
@@ -303,6 +312,7 @@ at::Tensor Im2winConvBase<dataType>::filter2window(){
     return output;
 }
 
+//im2win卷积浮点运算的实现
 template<class dataType>
 void Im2winConvBase<dataType>::conv_implement(){
     at::Tensor input_win = image2window();
