@@ -12,6 +12,7 @@
 #include <chrono>
 #define omp_flag dynamic
 
+//定义tensor类型的基类
 template<class dataType>
 class WeTensor{
     public:
@@ -32,6 +33,7 @@ class WeTensor{
     virtual void setZeroTensor() = 0; 
 };
 
+//比较两个tensor数据每个对应值，返回最大差异
 template<class dataType>
 double WeTensor<dataType>::compareTensor(WeTensor<dataType> &B){
     if(batch_size==B.batch_size&&channel==B.channel&&height==B.height&&width==B.width){
@@ -53,6 +55,7 @@ double WeTensor<dataType>::compareTensor(WeTensor<dataType> &B){
     }
 }
 
+//单精度tensor
 class STensor :public WeTensor<float>{
     public:
     STensor(size_t b, size_t c, size_t h, size_t w);
@@ -91,6 +94,7 @@ void DTensor::initDataTensor(){
     return;
 }
 
+//使用递增数组赋值
 void STensor::genArrangeTensor(){
     initDataTensor();
     #ifdef omp_flag
