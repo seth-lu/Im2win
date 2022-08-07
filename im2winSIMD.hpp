@@ -8,13 +8,13 @@
 template<typename dataType>
 union v_t{
   __m256d vec;
-  dataType value[256 / sizeof(dataType)];
+  dataType value[4];
 };
 
 template<typename dataType>
 union v_t_s{
   __m256 vec;
-  dataType value[256 / sizeof(dataType)];
+  dataType value[8];
 };
 
 template<typename dataType>
@@ -75,14 +75,14 @@ inline void ElementMul1x1(dataType *a, dataType *b, dataType &c)
 template<>
 inline void ElementMul1x8_fma(float *a, float *b, v_t_s<float> &c){
   v_t_s<float>
-    a_0p_a_1p_a_2p_a_3p_a_4p_a_5p_a_6p_a_7p_vreg,
-    b_p0_b_p1_b_p2_b_p3_b_p4_b_p5_b_p6_b_p7_vreg;
+    a_0p_a_7p_vreg,
+    b_p0_b_p7_vreg;
 
-    a_0p_a_1p_a_2p_a_3p_a_4p_a_5p_a_6p_a_7p_vreg.vec = _mm256_loadu_ps((float *) a); 
-    b_p0_b_p1_b_p2_b_p3_b_p4_b_p5_b_p6_b_p7_vreg.vec = _mm256_loadu_ps((float *) b);
+    a_0p_a_7p_vreg.vec = _mm256_loadu_ps((float *) a); 
+    b_p0_b_p7_vreg.vec = _mm256_loadu_ps((float *) b);
 
     // c.vec += a_0p_a_1p_a_2p_a_3p_vreg.vec * b_p0_b_p1_b_p2_b_p3_vreg.vec;
-    c.vec = _mm256_fmadd_ps(a_0p_a_1p_a_2p_a_3p_a_4p_a_5p_a_6p_a_7p_vreg.vec, b_p0_b_p1_b_p2_b_p3_b_p4_b_p5_b_p6_b_p7_vreg.vec, c.vec);
+    c.vec = _mm256_fmadd_ps(a_0p_a_7p_vreg.vec, b_p0_b_p7_vreg.vec, c.vec);
   return;
 }
 
@@ -102,18 +102,18 @@ inline void ElementMul1x4_fma(double *a, double *b, v_t<double> &c){
 template<>
 inline void ElementMul1x16_fma(float *a, float *b, v_t_s<float> &c){
   v_t_s<float>
-    a_0p_a_1p_a_2p_a_3p_a_4p_a_5p_a_6p_a_7p_vreg,   a_8p_a_9p_a_10p_a_11p_a_12p_a_13p_a_14p_a_15p_vreg,
-    b_p0_b_p1_b_p2_b_p3_b_p4_b_p5_b_p6_b_p7_vreg,   b_p8_b_p9_b_p10_b_p11_b_p12_b_p13_b_p14_b_p15_vreg;
+    a_0p_a_7p_vreg,   a_8p_a_15p_vreg,
+    b_p0_b_p7_vreg,   b_p8_b_p15_vreg;
 
-    a_0p_a_1p_a_2p_a_3p_a_4p_a_5p_a_6p_a_7p_vreg.vec = _mm256_loadu_ps((float *) a); 
-    a_8p_a_9p_a_10p_a_11p_a_12p_a_13p_a_14p_a_15p_vreg.vec = _mm256_loadu_ps((float *) a + 8); 
-    b_p0_b_p1_b_p2_b_p3_b_p4_b_p5_b_p6_b_p7_vreg.vec = _mm256_loadu_ps((float *) b);
-    a_8p_a_9p_a_10p_a_11p_a_12p_a_13p_a_14p_a_15p_vreg.vec = _mm256_loadu_ps((float *) b + 8);
+    a_0p_a_7p_vreg.vec = _mm256_loadu_ps((float *) a); 
+    a_8p_a_15p_vreg.vec = _mm256_loadu_ps((float *) a + 8); 
+    b_p0_b_p7_vreg.vec = _mm256_loadu_ps((float *) b);
+    b_p8_b_p15_vreg.vec = _mm256_loadu_ps((float *) b + 8);
 
     // c.vec += a_0p_a_1p_a_2p_a_3p_vreg.vec * b_p0_b_p1_b_p2_b_p3_vreg.vec
     //         +a_4p_a_5p_a_6p_a_7p_vreg.vec * b_p4_b_p5_b_p6_b_p7_vreg.vec;
-    c.vec = _mm256_fmadd_ps(a_8p_a_9p_a_10p_a_11p_a_12p_a_13p_a_14p_a_15p_vreg.vec, a_8p_a_9p_a_10p_a_11p_a_12p_a_13p_a_14p_a_15p_vreg.vec, 
-            _mm256_fmadd_ps(a_0p_a_1p_a_2p_a_3p_a_4p_a_5p_a_6p_a_7p_vreg.vec, b_p0_b_p1_b_p2_b_p3_b_p4_b_p5_b_p6_b_p7_vreg.vec, c.vec));
+    c.vec = _mm256_fmadd_ps(a_8p_a_15p_vreg.vec, b_p8_b_p15_vreg.vec, 
+            _mm256_fmadd_ps(a_0p_a_7p_vreg.vec, b_p0_b_p7_vreg.vec, c.vec));
   return;
 }
 
