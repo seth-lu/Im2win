@@ -3,37 +3,43 @@
 
 #include "ATen/ATen.h"
 #include "torch/torch.h"
-#include "ATen/native/LinearAlgebra.h"
-#include "ATen/native/CPUBlas.h"
+#include "ATen/cuda/PinnedMemoryAllocator.h"
 #include <stdio.h>
 #include <omp.h>
-#include <cblas.h>
 #include <cmath>
 #include <chrono>
 #define omp_flag dynamic
 
-//定义tensor类型的基类
+enum layout{NCHW = 1, NHWC = 2};
+enum device{cpu = 1, gpu = 2};
+
 template<class dataType>
 class WeTensor{
     public:
     at::Tensor dataTensor;
     size_t batch_size, channel, height, width;
     dataType *dataPtr;
+    layout dataLayout;
+    device deviceStorage;
 
     WeTensor(){};
+    ~WeTensor(){dataTensor.detach(); dataTensor.resize_(at::IntArrayRef{0});};
     at::Tensor getDataTensor(){return dataTensor;};
     void setSize(size_t b, size_t c, size_t h, size_t w){batch_size=b, channel=c, height=h, width=w;return;};
     int* getSize();
-    void setDataPtr(){dataPtr = dataTensor.data_ptr<dataType>();return;};
+    void setDataPtr(){dataPtr = dataTensor.data_ptr<dataType>(); return;};
     dataType* getDataPtr(){return dataPtr;};
     double compareTensor(WeTensor<dataType> &B);
+    void channelsLast(){dataTensor = dataTensor.to(at::MemoryFormat::ChannelsLast); dataLayout = NHWC; setDataPtr(); return;};
+    void contiguous(){dataTensor = dataTensor.to(at::MemoryFormat::Contiguous); dataLayout = NCHW; setDataPtr(); return;};
+    void deviceToGPU(){dataTensor = dataTensor.cuda(); deviceStorage = gpu; setDataPtr(); return;}
+    void deviceToCPU(){dataTensor = dataTensor.cpu(); deviceStorage = cpu; setDataPtr(); return;}
 
     virtual void initDataTensor() = 0;
     virtual void genArrangeTensor() = 0;
     virtual void setZeroTensor() = 0; 
 };
 
-//比较两个tensor数据每个对应值，返回最大差异
 template<class dataType>
 double WeTensor<dataType>::compareTensor(WeTensor<dataType> &B){
     if(batch_size==B.batch_size&&channel==B.channel&&height==B.height&&width==B.width){
@@ -41,12 +47,21 @@ double WeTensor<dataType>::compareTensor(WeTensor<dataType> &B){
     double diff = 1.0;
     dataType *a, *b;
     size_t iter = batch_size * channel * height * width;
+    int device_src = deviceStorage;
+    if(device_src == gpu){
+        deviceToCPU();
+        B.deviceToCPU();
+    }
     a = getDataPtr();
     b = B.getDataPtr();
     for(size_t i = 0; i < iter; ++i){
         diff = std::abs(*(a + i) - *(b + i));
         max_diff = ( diff > max_diff ? diff : max_diff );
         }
+    if(device_src == gpu){
+        deviceToGPU();
+        B.deviceToGPU();
+    }
     return max_diff;
     }
     else{
@@ -55,10 +70,10 @@ double WeTensor<dataType>::compareTensor(WeTensor<dataType> &B){
     }
 }
 
-//单精度tensor
 class STensor :public WeTensor<float>{
     public:
     STensor(size_t b, size_t c, size_t h, size_t w);
+    ~STensor(){dataTensor.detach(); dataTensor.resize_(at::IntArrayRef{0});};
     void initDataTensor() override;
     void genArrangeTensor() override;
     // double compareTensor(STensor &B) override;
@@ -84,17 +99,20 @@ DTensor::DTensor(size_t b, size_t c, size_t h, size_t w){
 
 void STensor::initDataTensor(){
     dataTensor = torch::randn({int(batch_size), int(channel), int(height), int(width)}, torch::kFloat);
+    dataLayout = NCHW;
+    deviceStorage = cpu;
     setDataPtr();
     return;
 }
 
 void DTensor::initDataTensor(){
     dataTensor = torch::randn({int(batch_size), int(channel), int(height), int(width)}, torch::kDouble);
+    dataLayout = NCHW;
+    deviceStorage = cpu;
     setDataPtr();
     return;
 }
 
-//使用递增数组赋值
 void STensor::genArrangeTensor(){
     initDataTensor();
     #ifdef omp_flag
@@ -105,7 +123,7 @@ void STensor::genArrangeTensor(){
             for(size_t m = 0; m < height; m++)
                 for(size_t n = 0; n < width; n++)
                     dataTensor[i][j][m][n] = float(i * channel * height * width
-                                           + j * height * width + m * width + n);
+                                           + j * height * width + m * width + n+1);
     return;
 }
 
@@ -119,7 +137,7 @@ void DTensor::genArrangeTensor(){
             for(size_t m = 0; m < height; m++)
                 for(size_t n = 0; n < width; n++)
                     dataTensor[i][j][m][n] = double(i * channel * height * width
-                                           + j * height * width + m * width + n);
+                                           + j * height * width + m * width + n+1);
     return;
 }
 
@@ -165,12 +183,16 @@ void DTensor::genArrangeTensor(){
 
 void STensor::setZeroTensor(){
     dataTensor = torch::zeros({int(batch_size), int(channel), int(height), int(width)}, torch::kFloat);
+    dataLayout = NCHW;
+    deviceStorage = cpu;
     setDataPtr();
     return;
 }
 
 void DTensor::setZeroTensor(){
     dataTensor = torch::zeros({int(batch_size), int(channel), int(height), int(width)}, torch::kDouble);
+    dataLayout = NCHW;
+    deviceStorage = cpu;
     setDataPtr();
     return;
 }

@@ -4,7 +4,6 @@
 #include <omp.h>
 #include <immintrin.h>  // AVX2
 
-
 template<typename dataType>
 union v_t{
   __m256d vec;
@@ -43,6 +42,9 @@ void ElementMul1x64_fma(dataType *a, dataType *b, v_t_s<dataType> &c);
 
 template<typename dataType>
 void ElementMul1x32_fma(dataType *a, dataType *b, v_t<dataType> &c);
+
+template<typename dataType>
+void ElementMul5x21_fma(dataType *a, dataType *b, v_t_s<dataType> &c_0, v_t_s<dataType> &c_1, v_t_s<dataType> &c_2, v_t_s<dataType> &c_3, v_t_s<dataType> &c_4);
 
 template<typename dataType>
 void ElementMul5x21_fma(dataType *a, dataType *b, v_t<dataType> &c_0, v_t<dataType> &c_1, v_t<dataType> &c_2, v_t<dataType> &c_3, v_t<dataType> &c_4);
@@ -266,6 +268,62 @@ inline void ElementMul1x32_fma(double *a, double *b, v_t<double> &c){
 }
 
 template<>
+inline void ElementMul5x21_fma(float *a, float *b, v_t_s<float> &c_0, v_t_s<float> &c_1, v_t_s<float> &c_2, v_t_s<float> &c_3, v_t_s<float> &c_4){
+  v_t_s<float>
+    a_0p_a_1p_a_2p_vreg,   a_3p_a_4p_a_5p_vreg,   a_6p_a_7p_a_8p_vreg,   a_9p_a_10p_a_11p_vreg,
+    a_12p_a_13p_a_14p_vreg,   a_15p_a_16p_a_17p_vreg,   a_18p_a_19p_a_20p_vreg,
+    b_p0_b_p1_b_p2_vreg,   b_p3_b_p4_b_p5_vreg,   b_p6_b_p7_b_p8_vreg;
+
+    a_0p_a_1p_a_2p_vreg.vec = _mm256_loadu_ps((float *) a);
+    a_3p_a_4p_a_5p_vreg.vec = _mm256_loadu_ps((float *) a + 3);
+    a_6p_a_7p_a_8p_vreg.vec = _mm256_loadu_ps((float *) a + 6);
+    a_9p_a_10p_a_11p_vreg.vec = _mm256_loadu_ps((float *) a + 9);
+    a_12p_a_13p_a_14p_vreg.vec = _mm256_loadu_ps((float *) a + 12);
+    a_15p_a_16p_a_17p_vreg.vec = _mm256_loadu_ps((float *) a + 15);
+    a_18p_a_19p_a_20p_vreg.vec = _mm256_loadu_ps((float *) a + 18);
+
+    b_p0_b_p1_b_p2_vreg.vec = _mm256_loadu_ps((float *) b);
+    b_p3_b_p4_b_p5_vreg.vec = _mm256_loadu_ps((float *) b + 3);
+    b_p6_b_p7_b_p8_vreg.vec = _mm256_loadu_ps((float *) b + 6);
+
+    // c_0.vec += a_0p_a_1p_a_2p_vreg.vec * b_p0_b_p1_b_p2_vreg.vec
+    //     +  a_3p_a_4p_a_5p_vreg.vec * b_p3_b_p4_b_p5_vreg.vec
+    //     +  a_6p_a_7p_a_8p_vreg.vec * b_p6_b_p7_b_p8_vreg.vec;
+    c_0.vec = _mm256_fmadd_ps(a_6p_a_7p_a_8p_vreg.vec, b_p6_b_p7_b_p8_vreg.vec,
+              _mm256_fmadd_ps(a_3p_a_4p_a_5p_vreg.vec, b_p3_b_p4_b_p5_vreg.vec,
+              _mm256_fmadd_ps(a_0p_a_1p_a_2p_vreg.vec, b_p0_b_p1_b_p2_vreg.vec, c_0.vec)));
+
+    // c_1.vec += a_3p_a_4p_a_5p_vreg.vec * b_p0_b_p1_b_p2_vreg.vec
+    //     +  a_6p_a_7p_a_8p_vreg.vec * b_p3_b_p4_b_p5_vreg.vec
+    //     +  a_9p_a_10p_a_11p_vreg.vec * b_p6_b_p7_b_p8_vreg.vec;
+    c_1.vec = _mm256_fmadd_ps(a_9p_a_10p_a_11p_vreg.vec, b_p6_b_p7_b_p8_vreg.vec,
+              _mm256_fmadd_ps(a_6p_a_7p_a_8p_vreg.vec, b_p3_b_p4_b_p5_vreg.vec,
+              _mm256_fmadd_ps(a_3p_a_4p_a_5p_vreg.vec, b_p0_b_p1_b_p2_vreg.vec, c_1.vec)));
+
+    // c_2.vec += a_6p_a_7p_a_8p_vreg.vec * b_p0_b_p1_b_p2_vreg.vec
+    //     +  a_9p_a_10p_a_11p_vreg.vec * b_p3_b_p4_b_p5_vreg.vec
+    //     +  a_12p_a_13p_a_14p_vreg.vec * b_p6_b_p7_b_p8_vreg.vec;
+    c_2.vec = _mm256_fmadd_ps(a_12p_a_13p_a_14p_vreg.vec, b_p6_b_p7_b_p8_vreg.vec,
+              _mm256_fmadd_ps(a_9p_a_10p_a_11p_vreg.vec, b_p3_b_p4_b_p5_vreg.vec,
+              _mm256_fmadd_ps(a_6p_a_7p_a_8p_vreg.vec, b_p0_b_p1_b_p2_vreg.vec, c_2.vec)));
+
+    // c_3.vec += a_9p_a_10p_a_11p_vreg.vec * b_p0_b_p1_b_p2_vreg.vec
+    //     +  a_12p_a_13p_a_14p_vreg.vec * b_p3_b_p4_b_p5_vreg.vec
+    //     +  a_15p_a_16p_a_17p_vreg.vec * b_p6_b_p7_b_p8_vreg.vec;
+    c_3.vec = _mm256_fmadd_ps(a_15p_a_16p_a_17p_vreg.vec, b_p6_b_p7_b_p8_vreg.vec,
+              _mm256_fmadd_ps(a_12p_a_13p_a_14p_vreg.vec, b_p3_b_p4_b_p5_vreg.vec,
+              _mm256_fmadd_ps(a_9p_a_10p_a_11p_vreg.vec, b_p0_b_p1_b_p2_vreg.vec, c_3.vec)));
+
+    // c_4.vec += a_12p_a_13p_a_14p_vreg.vec * b_p0_b_p1_b_p2_vreg.vec
+    //     +  a_15p_a_16p_a_17p_vreg.vec * b_p3_b_p4_b_p5_vreg.vec
+    //     +  a_18p_a_19p_a_20p_vreg.vec * b_p6_b_p7_b_p8_vreg.vec;
+    c_4.vec = _mm256_fmadd_ps(a_18p_a_19p_a_20p_vreg.vec, b_p6_b_p7_b_p8_vreg.vec,
+              _mm256_fmadd_ps(a_15p_a_16p_a_17p_vreg.vec, b_p3_b_p4_b_p5_vreg.vec,
+              _mm256_fmadd_ps(a_12p_a_13p_a_14p_vreg.vec, b_p0_b_p1_b_p2_vreg.vec, c_4.vec)));
+    return;
+}
+
+template<>
 inline void ElementMul5x21_fma(double *a, double *b, v_t<double> &c_0, v_t<double> &c_1, v_t<double> &c_2, v_t<double> &c_3, v_t<double> &c_4){
   v_t<double>
     a_0p_a_1p_a_2p_vreg,   a_3p_a_4p_a_5p_vreg,   a_6p_a_7p_a_8p_vreg,   a_9p_a_10p_a_11p_vreg,
@@ -431,6 +489,31 @@ inline void ElementMulWin_S(size_t k, double *a, double *b, double *c){
 }
 
 template<>
+inline void ElementMulWin_M(size_t k, size_t n, float *a, float *b, float *c){
+  if(n == 5){
+  v_t_s<float>
+    c_0_c_0_c_0_c_0_vreg, c_1_c_1_c_1_c_1_vreg, c_2_c_2_c_2_c_2_vreg,
+    c_3_c_3_c_3_c_3_vreg, c_4_c_4_c_4_c_4_vreg;
+    c_0_c_0_c_0_c_0_vreg.vec = _mm256_setzero_ps(); 
+    c_1_c_1_c_1_c_1_vreg.vec = _mm256_setzero_ps();
+    c_2_c_2_c_2_c_2_vreg.vec = _mm256_setzero_ps(); 
+    c_3_c_3_c_3_c_3_vreg.vec = _mm256_setzero_ps();
+    c_4_c_4_c_4_c_4_vreg.vec = _mm256_setzero_ps(); 
+ 
+    float *a_to = a;
+    float *b_to = b;
+    ElementMul5x21_fma(a_to, b_to, c_0_c_0_c_0_c_0_vreg, c_1_c_1_c_1_c_1_vreg,
+                   c_2_c_2_c_2_c_2_vreg, c_3_c_3_c_3_c_3_vreg, c_4_c_4_c_4_c_4_vreg);
+    *c += c_0_c_0_c_0_c_0_vreg.value[0] + c_0_c_0_c_0_c_0_vreg.value[1] + c_0_c_0_c_0_c_0_vreg.value[2];
+    *(c + 1) += c_1_c_1_c_1_c_1_vreg.value[0] + c_1_c_1_c_1_c_1_vreg.value[1] + c_1_c_1_c_1_c_1_vreg.value[2];
+    *(c + 2) += c_2_c_2_c_2_c_2_vreg.value[0] + c_2_c_2_c_2_c_2_vreg.value[1] + c_2_c_2_c_2_c_2_vreg.value[2];
+    *(c + 3) += c_3_c_3_c_3_c_3_vreg.value[0] + c_3_c_3_c_3_c_3_vreg.value[1] + c_3_c_3_c_3_c_3_vreg.value[2];
+    *(c + 4) += c_4_c_4_c_4_c_4_vreg.value[0] + c_4_c_4_c_4_c_4_vreg.value[1] + c_4_c_4_c_4_c_4_vreg.value[2];
+  }
+  return;
+}
+
+template<>
 inline void ElementMulWin_M(size_t k, size_t n, double *a, double *b, double *c){
   if(n == 5){
   v_t<double>
@@ -457,15 +540,38 @@ inline void ElementMulWin_M(size_t k, size_t n, double *a, double *b, double *c)
 
 template<>
 inline void ElementMulWin_col(float *a, float *b, size_t *dims_b, float *c, size_t *dims_c, size_t stride){
-  size_t i; 
+  size_t i, j; 
   size_t w = dims_c[3];
   size_t w_w = dims_b[3];
   size_t h_w = dims_b[2];
-  size_t k = w_w * h_w; 
+  size_t k = w_w * h_w;
+  size_t win_to_vec = k / 16;
+
+  if(win_to_vec >=1||stride >1) 
   for(i = 0; i < w; ++i){
     float *a_to = a + i * h_w * stride;
     float *c_to = c + i;
     ElementMulWin_S(k, a_to, b, c_to);
+  }
+
+  else{
+    size_t num_vec = h_w % 4 == 0 ? h_w/4 : h_w/4+1;
+    size_t s = (16 - num_vec * w_w * 2 - 1)/(num_vec + 1) + 1;
+    size_t q = w / s;
+    size_t dataType = w % s;
+    
+    for(i = 0; i < q; ++i){
+      float *a_to = a + i * s * h_w;
+      float *c_to = c + i * s;
+      ElementMulWin_M(k, s, a_to, b, c_to);
+    }
+      float *a_to_ = a + q * s * h_w;
+      float *c_to_ = c + q * s;
+    for(j = 0; j < dataType; ++j){
+      float *a_to_S = a_to_ + j * h_w;
+      float *c_to_S = c_to_ + j;
+      ElementMulWin_S(k, a_to_S, b, c_to_S);
+    }
   }
   return;
 }
