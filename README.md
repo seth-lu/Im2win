@@ -16,7 +16,7 @@ Out of dir compilation:
 <pre> $ cd im2win-CUDA
  $ mkdir build
  $ cd build
- $ cmake ../test
+ $ cmake ../benchmarks
  $ make
  </pre>
  Or run the script:
