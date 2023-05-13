@@ -1,6 +1,6 @@
 #include "../src/cpp/WeTensor.hpp"
 #include "../src/cpp/Convolution.hpp"
-#include "benchmark.h"
+#include "benchmarks.h"
 #include <cuda_runtime.h>
 #include <stdlib.h>
 
