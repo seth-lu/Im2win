@@ -26,8 +26,8 @@ Out of dir compilation:
  </pre>
  The compiled test benchmark can be run using the following command: 
  <pre>
- \$ \textbf{cd} im2win-CUDA \\
- \$ ./build/demo \\
+ $ cd im2win-CUDA
+ $ ./build/demo
  </pre>
- After executing this command, different convolutional algorithms will be run on the test benchmark and performance will be recorded, with the results output to the \textbf{log} folder.
+ After executing this command, different convolutional algorithms will be run on the test benchmark and performance will be recorded, with the results output to the log folder.
 # Please cite
