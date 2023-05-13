@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
-project(demo)
+project(benchmarks)
 
 file( GLOB  cu  ../src *.cu *.cuh)
 file( GLOB  hdr ../src *.hpp *.h)
-set(SOURCES demo.cpp)
+set(SOURCES benchmarks.cpp)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/home/ubuntu/code_cpp/TA/libtorch-CUDA")
 find_package(Torch REQUIRED)
