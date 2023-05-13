@@ -1,5 +1,5 @@
 # Intro
-This project is an efficient convolution paradigm on GPU.
+We proposes a window-order-based convolution paradigm on GPU, called im2win, which not only reduces memory footprint but also offers continuous memory ac- cesses, resulting in improved performance. This project is an efficient convolution paradigm on GPU.
 # Description
 Our package has 4 parts: source code (src), unit test (test), log, and gnuplot for plotting figures (plot). Please refer to the Readme file in each part in the package.
 # Prerequisites
