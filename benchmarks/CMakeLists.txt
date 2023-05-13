@@ -3,7 +3,7 @@ project(demo)
 
 file( GLOB  cu  ../src *.cu *.cuh)
 file( GLOB  hdr ../src *.hpp *.h)
-set(SOURCES test.cpp)
+set(SOURCES demo.cpp)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/home/ubuntu/code_cpp/TA/libtorch-CUDA")
 find_package(Torch REQUIRED)
