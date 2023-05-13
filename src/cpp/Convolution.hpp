@@ -4,8 +4,6 @@
 #include "WeTensor.hpp"
 #include "im2winSIMD.hpp"
 #include "../cu/convImplentCUDA.cuh"
-#include "mkl.h"
-//#include <cblas.h>
 
 template<class dataType>
 class Convolution{
@@ -1092,8 +1090,8 @@ void Im2winConvHPC<float>::conv_implement(){
                             x = inptr + jcibD;
                             y = outptr + jibY;
                             //mkl_enable_instructions(MKL_ENABLE_AVX2);
-                            cblas_sgemv(CblasRowMajor, CblasNoTrans, m, n, alpha, a, lda,
-                                        x, incx, beta, y, incy);
+                            //cblas_sgemv(CblasRowMajor, CblasNoTrans, m, n, alpha, a, lda,
+                                        //x, incx, beta, y, incy);
                             // cblas_sgemv(CblasRowMajor, CblasNoTrans, m, n, alpha, a, lda,
                             //             x+1*gap_width, incx, beta, y+1, incy);
                             // j += 2;
@@ -1146,8 +1144,8 @@ void Im2winConvHPC<float>::conv_implement(){
                             x = inptr + jcibD;
                             y = outptr + jibY;
                             //mkl_enable_instructions(MKL_ENABLE_AVX2);
-                            cblas_sgemv(CblasRowMajor, CblasNoTrans, m, n, alpha, a, lda,
-                                        x, incx, beta, y, incy);
+                            //cblas_sgemv(CblasRowMajor, CblasNoTrans, m, n, alpha, a, lda,
+                                        //x, incx, beta, y, incy);
                             // cblas_sgemv(CblasRowMajor, CblasNoTrans, m, n, alpha, a, lda,
                             //             x+1*gap_width, incx, beta, y+1, incy);
                             // j += 2;
