@@ -1,3 +1,0 @@
-	im2c_t	dir_t	im2wBase_t	im2wMKL_t	im2c_G	dir_G	im2wBase_G	im2w_G
-Conv1	0.48837	1.35821	2.46033	0.124896	55.2578	19.8691	10.9686	216.07
-Conv2	1	2	3	4	5	6	7	8
