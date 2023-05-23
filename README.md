@@ -16,7 +16,7 @@ Out of dir compilation:
 <pre> $ cd im2win-CUDA
  $ mkdir build
  $ cd build
- $ cmake ../benchmarks
+ $ cmake -D CMAKE_PREFIX_PATH=/home/pytorch/libtorch/ ../benchmarks # Modify to the absolute path of ‘libtorch’
  $ make
  </pre>
  Or run the script:
