@@ -17,7 +17,7 @@ enable_language(CUDA)
 CUDA_ADD_LIBRARY(codeCUDA ${cu})
 target_link_libraries(${PROJECT_NAME} codeCUDA)
 target_link_libraries(${PROJECT_NAME} "${TORCH_LIBRARIES}")
-#set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${CUDA_cudnn_LIBRARY})
 
