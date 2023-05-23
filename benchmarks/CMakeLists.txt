@@ -5,7 +5,6 @@ file( GLOB  cu  ../src *.cu *.cuh)
 file( GLOB  hdr ../src *.hpp *.h)
 set(SOURCES benchmarks.cpp)
 
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/home/ubuntu/code_cpp/TA/libtorch-CUDA")
 find_package(Torch REQUIRED)
 find_package(CUDA REQUIRED)
 
@@ -18,7 +17,7 @@ enable_language(CUDA)
 CUDA_ADD_LIBRARY(codeCUDA ${cu})
 target_link_libraries(${PROJECT_NAME} codeCUDA)
 target_link_libraries(${PROJECT_NAME} "${TORCH_LIBRARIES}")
-set(CMAKE_BUILD_TYPE "Debug")
+#set(CMAKE_BUILD_TYPE "Debug")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${CUDA_cudnn_LIBRARY})
 
